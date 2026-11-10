@@ -15,9 +15,11 @@ int main()
 
     /* Variables auxiliares */
     int i = 0;
+    int j = 0;
     int instruccion = 0;
     int detener = 0;
     int error = 0;
+    int resultadoLectura = 0;
 
     /* Archivo */
     FILE *archivo;
@@ -25,23 +27,23 @@ int main()
 
     printf("=== SIMULADOR SIMPLETRON ===\n");
 
-    /* Solicitar ruta del archivo */
+    /* Solicitar ruta */
     printf("\nIntroduce la ruta del archivo SML:\n");
     scanf(" %199[^\n]", nombreArchivo);
 
     /* Eliminar comillas si existen */
     if (nombreArchivo[0] == '"')
     {
-        for (i = 0; nombreArchivo[i] != '\0'; i++)
+        for (j = 0; nombreArchivo[j] != '\0'; j++)
         {
-            nombreArchivo[i] = nombreArchivo[i + 1];
+            nombreArchivo[j] = nombreArchivo[j + 1];
         }
 
-        for (i = 0; nombreArchivo[i] != '\0'; i++)
+        for (j = 0; nombreArchivo[j] != '\0'; j++)
         {
-            if (nombreArchivo[i] == '"')
+            if (nombreArchivo[j] == '"')
             {
-                nombreArchivo[i] = '\0';
+                nombreArchivo[j] = '\0';
                 break;
             }
         }
@@ -52,18 +54,39 @@ int main()
 
     if (archivo == NULL)
     {
-        printf("Error: no se pudo abrir el archivo.\n");
+        printf("\nError: no se pudo abrir el archivo.\n");
         return 1;
     }
 
     /* Cargar instrucciones */
     printf("\n=== CARGA DEL PROGRAMA ===\n");
 
-    while (i < 100 && fscanf(archivo, "%d", &instruccion) == 1)
+    while (1)
     {
-        if (instruccion < -9999 || instruccion > 9999)
+        resultadoLectura = fscanf(archivo, "%d", &instruccion);
+
+        if (resultadoLectura == EOF)
         {
-            printf("Error: instruccion fuera de rango.\n");
+            break;
+        }
+
+        if (resultadoLectura != 1)
+        {
+            printf("\nError: el archivo contiene un dato no numerico.\n");
+            error = 1;
+            break;
+        }
+
+        if (i >= 100)
+        {
+            printf("\nError: el programa supera las 100 instrucciones.\n");
+            error = 1;
+            break;
+        }
+
+        if (instruccion < 0 || instruccion > 9999)
+        {
+            printf("\nError: instruccion fuera de rango.\n");
             error = 1;
             break;
         }
@@ -77,8 +100,16 @@ int main()
 
     fclose(archivo);
 
+    /* Verificar que el archivo no este vacio */
+    if (error == 0 && i == 0)
+    {
+        printf("\nError: el archivo esta vacio.\n");
+        error = 1;
+    }
+
     if (error == 1)
     {
+        printf("\nNo se puede ejecutar el programa.\n");
         return 1;
     }
 
@@ -88,9 +119,10 @@ int main()
     while (detener == 0)
     {
         /* FETCH */
-        if (contadorInstrucciones < 0 || contadorInstrucciones >= 100)
+        if (contadorInstrucciones < 0 ||
+            contadorInstrucciones >= 100)
         {
-            printf("Error: direccion de memoria invalida.\n");
+            printf("\nError: direccion de memoria invalida.\n");
             break;
         }
 
@@ -109,7 +141,12 @@ int main()
         {
             case 10:
                 printf("Introduce un numero: ");
-                scanf("%d", &memoria[operando]);
+
+                if (scanf("%d", &memoria[operando]) != 1)
+                {
+                    printf("Error: entrada no valida.\n");
+                    detener = 1;
+                }
                 break;
 
             case 11:
