@@ -21,6 +21,7 @@ int main()
     int error = 0;
     int resultadoLectura = 0;
     int resultado = 0;
+    int cantidadInstrucciones = 0;
 
     /* Archivo */
     FILE *archivo;
@@ -92,13 +93,17 @@ int main()
         }
 
         memoria[i] = instruccion;
+
         printf("Memoria[%d]: %d\n", i, instruccion);
+
         i++;
     }
 
     fclose(archivo);
 
-    if (error == 0 && i == 0)
+    cantidadInstrucciones = i;
+
+    if (error == 0 && cantidadInstrucciones == 0)
     {
         printf("\nError: el archivo esta vacio.\n");
         error = 1;
@@ -117,9 +122,10 @@ int main()
     {
         /* FETCH */
         if (contadorInstrucciones < 0 ||
-            contadorInstrucciones >= 100)
+            contadorInstrucciones >= cantidadInstrucciones)
         {
-            printf("\nError: direccion de memoria invalida.\n");
+            printf("\nError: direccion de memoria fuera del programa.\n");
+            detener = 1;
             break;
         }
 
@@ -229,20 +235,44 @@ int main()
                 break;
 
             case 40:
-                contadorInstrucciones = operando;
+                if (operando >= cantidadInstrucciones)
+                {
+                    printf("Error: direccion de salto invalida.\n");
+                    detener = 1;
+                }
+                else
+                {
+                    contadorInstrucciones = operando;
+                }
                 break;
 
             case 41:
                 if (acumulador < 0)
                 {
-                    contadorInstrucciones = operando;
+                    if (operando >= cantidadInstrucciones)
+                    {
+                        printf("Error: direccion de salto invalida.\n");
+                        detener = 1;
+                    }
+                    else
+                    {
+                        contadorInstrucciones = operando;
+                    }
                 }
                 break;
 
             case 42:
                 if (acumulador == 0)
                 {
-                    contadorInstrucciones = operando;
+                    if (operando >= cantidadInstrucciones)
+                    {
+                        printf("Error: direccion de salto invalida.\n");
+                        detener = 1;
+                    }
+                    else
+                    {
+                        contadorInstrucciones = operando;
+                    }
                 }
                 break;
 
