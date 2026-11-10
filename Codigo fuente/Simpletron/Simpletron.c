@@ -20,6 +20,7 @@ int main()
     int detener = 0;
     int error = 0;
     int resultadoLectura = 0;
+    int resultado = 0;
 
     /* Archivo */
     FILE *archivo;
@@ -27,11 +28,10 @@ int main()
 
     printf("=== SIMULADOR SIMPLETRON ===\n");
 
-    /* Solicitar ruta */
     printf("\nIntroduce la ruta del archivo SML:\n");
     scanf(" %199[^\n]", nombreArchivo);
 
-    /* Eliminar comillas si existen */
+    /* Eliminar comillas */
     if (nombreArchivo[0] == '"')
     {
         for (j = 0; nombreArchivo[j] != '\0'; j++)
@@ -92,15 +92,12 @@ int main()
         }
 
         memoria[i] = instruccion;
-
         printf("Memoria[%d]: %d\n", i, instruccion);
-
         i++;
     }
 
     fclose(archivo);
 
-    /* Verificar que el archivo no este vacio */
     if (error == 0 && i == 0)
     {
         printf("\nError: el archivo esta vacio.\n");
@@ -113,7 +110,7 @@ int main()
         return 1;
     }
 
-    /* Ciclo de ejecucion */
+    /* Ejecucion */
     printf("\n=== EJECUCION DEL SIMPLETRON ===\n");
 
     while (detener == 0)
@@ -147,6 +144,12 @@ int main()
                     printf("Error: entrada no valida.\n");
                     detener = 1;
                 }
+                else if (memoria[operando] < -9999 ||
+                         memoria[operando] > 9999)
+                {
+                    printf("Error: valor fuera de rango.\n");
+                    detener = 1;
+                }
                 break;
 
             case 11:
@@ -162,11 +165,31 @@ int main()
                 break;
 
             case 30:
-                acumulador = acumulador + memoria[operando];
+                resultado = acumulador + memoria[operando];
+
+                if (resultado < -9999 || resultado > 9999)
+                {
+                    printf("Error: desbordamiento en la suma.\n");
+                    detener = 1;
+                }
+                else
+                {
+                    acumulador = resultado;
+                }
                 break;
 
             case 31:
-                acumulador = acumulador - memoria[operando];
+                resultado = acumulador - memoria[operando];
+
+                if (resultado < -9999 || resultado > 9999)
+                {
+                    printf("Error: desbordamiento en la resta.\n");
+                    detener = 1;
+                }
+                else
+                {
+                    acumulador = resultado;
+                }
                 break;
 
             case 32:
@@ -177,12 +200,32 @@ int main()
                 }
                 else
                 {
-                    acumulador = acumulador / memoria[operando];
+                    resultado = acumulador / memoria[operando];
+
+                    if (resultado < -9999 || resultado > 9999)
+                    {
+                        printf("Error: desbordamiento en la division.\n");
+                        detener = 1;
+                    }
+                    else
+                    {
+                        acumulador = resultado;
+                    }
                 }
                 break;
 
             case 33:
-                acumulador = acumulador * memoria[operando];
+                resultado = acumulador * memoria[operando];
+
+                if (resultado < -9999 || resultado > 9999)
+                {
+                    printf("Error: desbordamiento en la multiplicacion.\n");
+                    detener = 1;
+                }
+                else
+                {
+                    acumulador = resultado;
+                }
                 break;
 
             case 40:
@@ -215,7 +258,7 @@ int main()
         }
     }
 
-    /* Mostrar memoria */
+    /* Memoria final */
     printf("\n=== MEMORIA FINAL ===\n");
 
     for (i = 0; i < 100; i++)
