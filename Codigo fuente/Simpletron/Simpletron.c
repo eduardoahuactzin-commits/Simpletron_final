@@ -17,31 +17,69 @@ int main()
     int i = 0;
     int instruccion = 0;
     int detener = 0;
+    int error = 0;
+
+    /* Archivo */
+    FILE *archivo;
+    char nombreArchivo[200];
 
     printf("=== SIMULADOR SIMPLETRON ===\n");
 
-    /* Cargar instrucciones */
-    printf("\nIntroduce instrucciones (-99999 para terminar):\n");
+    /* Solicitar ruta del archivo */
+    printf("\nIntroduce la ruta del archivo SML:\n");
+    scanf(" %199[^\n]", nombreArchivo);
 
-    while (i < 100)
+    /* Eliminar comillas si existen */
+    if (nombreArchivo[0] == '"')
     {
-        printf("Memoria[%d]: ", i);
-        scanf("%d", &instruccion);
-
-        if (instruccion == -99999)
+        for (i = 0; nombreArchivo[i] != '\0'; i++)
         {
-            break;
+            nombreArchivo[i] = nombreArchivo[i + 1];
         }
 
+        for (i = 0; nombreArchivo[i] != '\0'; i++)
+        {
+            if (nombreArchivo[i] == '"')
+            {
+                nombreArchivo[i] = '\0';
+                break;
+            }
+        }
+    }
+
+    /* Abrir archivo */
+    archivo = fopen(nombreArchivo, "r");
+
+    if (archivo == NULL)
+    {
+        printf("Error: no se pudo abrir el archivo.\n");
+        return 1;
+    }
+
+    /* Cargar instrucciones */
+    printf("\n=== CARGA DEL PROGRAMA ===\n");
+
+    while (i < 100 && fscanf(archivo, "%d", &instruccion) == 1)
+    {
         if (instruccion < -9999 || instruccion > 9999)
         {
             printf("Error: instruccion fuera de rango.\n");
+            error = 1;
+            break;
         }
-        else
-        {
-            memoria[i] = instruccion;
-            i++;
-        }
+
+        memoria[i] = instruccion;
+
+        printf("Memoria[%d]: %d\n", i, instruccion);
+
+        i++;
+    }
+
+    fclose(archivo);
+
+    if (error == 1)
+    {
+        return 1;
     }
 
     /* Ciclo de ejecucion */
