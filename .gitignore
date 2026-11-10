@@ -1,0 +1,11 @@
+# Archivos ejecutables
+*.exe
+*.o
+
+# Archivos temporales
+*.tmp
+*.bak
+
+# Archivos de Dev-C++
+*.layout
+*.depend
