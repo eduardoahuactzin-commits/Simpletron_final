@@ -1,0 +1,5 @@
+10 rem Primer programa en Simple
+20 input a
+30 let b = a * 2
+40 print b
+50 end
