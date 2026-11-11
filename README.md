@@ -210,3 +210,16 @@ https://github.com/eduardoahuactzin-commits/Simpletron_final
 ## 14. Estado del proyecto
 
 Proyecto desarrollado en lenguaje C. Incluye un simulador Simpletron, un evaluador de expresiones y un compilador del lenguaje Simple a SML.
+
+## 15. Rama de mejoras
+
+La rama `mejoras` se utiliza para trabajar en extensiones y mejoras
+del simulador Simpletron sin modificar directamente la versión principal.
+
+Entre las extensiones implementadas se encuentran:
+
+- Operación de módulo.
+- Operación de potencia.
+- Validaciones de errores.
+- Detección de división entre cero.
+- Validación de direcciones de memoria.
