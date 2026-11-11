@@ -1,13 +1,9 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
+#include "Expresiones.h"
 
-#define MAX 200
-
-char expresion[MAX];
 char postfija[MAX][30];
 char operadores[MAX];
 int cantidadPostfija = 0;
@@ -35,27 +31,24 @@ int esOperador(char caracter)
 
 int validarExpresion(char texto[])
 {
-    int i = 0;
+    int i;
     int parentesis = 0;
     int esperaNumero = 1;
-    int encontroElemento = 0;
 
-    while (texto[i] != '\0' && texto[i] != '\n')
+    for (i = 0; texto[i] != '\0'; i++)
     {
-        if (texto[i] == ' ')
-        {
-            i++;
-        }
-        else if (isdigit(texto[i]))
+        if (isspace(texto[i]))
+            continue;
+
+        if (isdigit(texto[i]))
         {
             if (!esperaNumero)
                 return 0;
 
-            while (isdigit(texto[i]))
+            while (isdigit(texto[i + 1]))
                 i++;
 
             esperaNumero = 0;
-            encontroElemento = 1;
         }
         else if (texto[i] == '(')
         {
@@ -63,8 +56,6 @@ int validarExpresion(char texto[])
                 return 0;
 
             parentesis++;
-            i++;
-            esperaNumero = 1;
         }
         else if (texto[i] == ')')
         {
@@ -72,7 +63,6 @@ int validarExpresion(char texto[])
                 return 0;
 
             parentesis--;
-            i++;
             esperaNumero = 0;
         }
         else if (esOperador(texto[i]))
@@ -80,7 +70,6 @@ int validarExpresion(char texto[])
             if (esperaNumero)
                 return 0;
 
-            i++;
             esperaNumero = 1;
         }
         else
@@ -89,92 +78,75 @@ int validarExpresion(char texto[])
         }
     }
 
-    if (!encontroElemento || esperaNumero || parentesis != 0)
-        return 0;
-
-    return 1;
+    return parentesis == 0 && !esperaNumero;
 }
 
 int convertirPostfija(char texto[])
 {
-    int i = 0;
-    int tope = -1;
-    int j;
-    char numero[30];
+    int i;
+    int j = 0;
+    int k;
+    int longitud = strlen(texto);
 
     cantidadPostfija = 0;
+    k = 0;
 
-    while (texto[i] != '\0' && texto[i] != '\n')
+    for (i = 0; i < longitud; i++)
     {
-        if (texto[i] == ' ')
-        {
-            i++;
-        }
-        else if (isdigit(texto[i]))
+        if (isspace(texto[i]))
+            continue;
+
+        if (isdigit(texto[i]))
         {
             j = 0;
 
             while (isdigit(texto[i]))
             {
-                if (j >= 29)
-                    return 0;
-
-                numero[j] = texto[i];
+                postfija[cantidadPostfija][j] = texto[i];
                 j++;
                 i++;
             }
 
-            numero[j] = '\0';
-
-            strcpy(postfija[cantidadPostfija], numero);
+            postfija[cantidadPostfija][j] = '\0';
             cantidadPostfija++;
+            i--;
         }
         else if (texto[i] == '(')
         {
-            operadores[++tope] = texto[i];
-            i++;
+            operadores[k++] = texto[i];
         }
         else if (texto[i] == ')')
         {
-            while (tope >= 0 && operadores[tope] != '(')
+            while (k > 0 && operadores[k - 1] != '(')
             {
-                postfija[cantidadPostfija][0] = operadores[tope--];
+                postfija[cantidadPostfija][0] = operadores[--k];
                 postfija[cantidadPostfija][1] = '\0';
                 cantidadPostfija++;
             }
 
-            if (tope < 0)
-                return 0;
-
-            tope--;
-            i++;
+            if (k > 0)
+                k--;
         }
         else if (esOperador(texto[i]))
         {
-            while (tope >= 0 && operadores[tope] != '(' &&
-                   (prioridad(operadores[tope]) > prioridad(texto[i]) ||
-                   (prioridad(operadores[tope]) == prioridad(texto[i]) &&
-                    texto[i] != '^')))
+            while (k > 0 &&
+                   operadores[k - 1] != '(' &&
+                   (prioridad(operadores[k - 1]) > prioridad(texto[i]) ||
+                   (prioridad(operadores[k - 1]) == prioridad(texto[i]) &&
+                   texto[i] != '^')))
             {
-                postfija[cantidadPostfija][0] = operadores[tope--];
+                postfija[cantidadPostfija][0] = operadores[--k];
                 postfija[cantidadPostfija][1] = '\0';
                 cantidadPostfija++;
             }
 
-            operadores[++tope] = texto[i];
-            i++;
+            operadores[k++] = texto[i];
         }
-
-        if (cantidadPostfija >= MAX)
-            return 0;
     }
 
-    while (tope >= 0)
+    while (k > 0)
     {
-        if (operadores[tope] == '(')
-            return 0;
-
-        postfija[cantidadPostfija][0] = operadores[tope--];
+        postfija[cantidadPostfija][0] = operadores[--k];
         postfija[cantidadPostfija][1] = '\0';
         cantidadPostfija++;
     }
@@ -187,19 +159,17 @@ int evaluarPostfija(int *resultado)
     int pila[MAX];
     int tope = -1;
     int i;
-    int a, b;
-    int valor;
+    int a;
+    int b;
     int j;
-    long long potencia;
+    int potencia;
+    int temporal;
 
     for (i = 0; i < cantidadPostfija; i++)
     {
         if (isdigit(postfija[i][0]))
         {
-            valor = atoi(postfija[i]);
-
-            tope++;
-            pila[tope] = valor;
+            pila[++tope] = atoi(postfija[i]);
         }
         else
         {
@@ -210,17 +180,17 @@ int evaluarPostfija(int *resultado)
             a = pila[tope--];
 
             if (postfija[i][0] == '+')
-                valor = a + b;
+                temporal = a + b;
             else if (postfija[i][0] == '-')
-                valor = a - b;
+                temporal = a - b;
             else if (postfija[i][0] == '*')
-                valor = a * b;
+                temporal = a * b;
             else if (postfija[i][0] == '/')
             {
                 if (b == 0)
                     return 0;
 
-                valor = a / b;
+                temporal = a / b;
             }
             else if (postfija[i][0] == '^')
             {
@@ -232,64 +202,21 @@ int evaluarPostfija(int *resultado)
                 for (j = 0; j < b; j++)
                 {
                     potencia = potencia * a;
-
-                    if (potencia > 999999999 || potencia < -999999999)
-                        return 0;
                 }
 
-                valor = (int)potencia;
+                temporal = potencia;
             }
             else
                 return 0;
 
-            tope++;
-            pila[tope] = valor;
+            pila[++tope] = temporal;
         }
     }
 
     if (tope != 0)
         return 0;
 
-    *resultado = pila[0];
+    *resultado = pila[tope];
 
     return 1;
 }
-
-int main()
-{
-    int resultado;
-    int i;
-
-    printf("=== EVALUADOR DE EXPRESIONES ===\n");
-
-    printf("Introduce una expresion: ");
-    fgets(expresion, MAX, stdin);
-
-    if (!validarExpresion(expresion))
-    {
-        printf("Error: expresion invalida.\n");
-        return 1;
-    }
-
-    if (!convertirPostfija(expresion))
-    {
-        printf("Error al convertir la expresion.\n");
-        return 1;
-    }
-
-    printf("\nExpresion postfija: ");
-
-    for (i = 0; i < cantidadPostfija; i++)
-        printf("%s ", postfija[i]);
-
-    if (!evaluarPostfija(&resultado))
-    {
-        printf("\nError al evaluar la expresion.\n");
-        return 1;
-    }
-
-    printf("\nResultado: %d\n", resultado);
-
-    return 0;
-}
-
