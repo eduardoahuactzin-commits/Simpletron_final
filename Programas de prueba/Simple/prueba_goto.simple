@@ -1,0 +1,6 @@
+10 input a
+20 if a < 5 goto 50
+30 print 0
+40 goto 60
+50 print 1
+60 end

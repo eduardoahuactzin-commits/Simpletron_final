@@ -3,17 +3,14 @@
 
 int main()
 {
-    /* Memoria */
     int memoria[100] = {0};
 
-    /* Registros */
     int acumulador = 0;
     int contadorInstrucciones = 0;
     int registroInstruccion = 0;
     int codigoOperacion = 0;
     int operando = 0;
 
-    /* Variables auxiliares */
     int i = 0;
     int j = 0;
     int instruccion = 0;
@@ -23,22 +20,27 @@ int main()
     int resultado = 0;
     int cantidadInstrucciones = 0;
 
-    /* Archivo */
+    int exponente = 0;
+    int potencia = 1;
+    long long potenciaTemporal = 0;
+
     FILE *archivo;
     char nombreArchivo[200];
 
-    printf("=== SIMULADOR SIMPLETRON ===\n");
+    printf("=== EJECUCION DEL SIMPLETRON ===\n");
 
     printf("\nIntroduce la ruta del archivo SML:\n");
-    scanf(" %199[^\n]", nombreArchivo);
 
-    /* Eliminar comillas */
+    if (scanf(" %199[^\n]", nombreArchivo) != 1)
+    {
+        printf("Error al leer el nombre del archivo.\n");
+        return 1;
+    }
+
     if (nombreArchivo[0] == '"')
     {
         for (j = 0; nombreArchivo[j] != '\0'; j++)
-        {
             nombreArchivo[j] = nombreArchivo[j + 1];
-        }
 
         for (j = 0; nombreArchivo[j] != '\0'; j++)
         {
@@ -50,7 +52,6 @@ int main()
         }
     }
 
-    /* Abrir archivo */
     archivo = fopen(nombreArchivo, "r");
 
     if (archivo == NULL)
@@ -59,7 +60,6 @@ int main()
         return 1;
     }
 
-    /* Cargar instrucciones */
     printf("\n=== CARGA DEL PROGRAMA ===\n");
 
     while (1)
@@ -67,9 +67,7 @@ int main()
         resultadoLectura = fscanf(archivo, "%d", &instruccion);
 
         if (resultadoLectura == EOF)
-        {
             break;
-        }
 
         if (resultadoLectura != 1)
         {
@@ -80,21 +78,21 @@ int main()
 
         if (i >= 100)
         {
-            printf("\nError: el programa supera las 100 instrucciones.\n");
+            printf("\nError: el programa supera las 100 posiciones.\n");
             error = 1;
             break;
         }
 
-        if (instruccion < 0 || instruccion > 9999)
+        if (instruccion < -9999 || instruccion > 9999)
         {
-            printf("\nError: instruccion fuera de rango.\n");
+            printf("\nError: valor fuera de rango.\n");
             error = 1;
             break;
         }
 
         memoria[i] = instruccion;
 
-        printf("Memoria[%d]: %d\n", i, instruccion);
+        printf("Memoria[%d]: %+05d\n", i, instruccion);
 
         i++;
     }
@@ -115,12 +113,10 @@ int main()
         return 1;
     }
 
-    /* Ejecucion */
-    printf("\n=== EJECUCION DEL SIMPLETRON ===\n");
+    printf("\n=== EJECUCION DEL PROGRAMA ===\n");
 
     while (detener == 0)
     {
-        /* FETCH */
         if (contadorInstrucciones < 0 ||
             contadorInstrucciones >= cantidadInstrucciones)
         {
@@ -131,7 +127,6 @@ int main()
 
         registroInstruccion = memoria[contadorInstrucciones];
 
-        /* DECODE */
         codigoOperacion = registroInstruccion / 100;
         operando = registroInstruccion % 100;
 
@@ -139,7 +134,6 @@ int main()
 
         contadorInstrucciones++;
 
-        /* EXECUTE */
         switch (codigoOperacion)
         {
             case 10:
@@ -179,9 +173,7 @@ int main()
                     detener = 1;
                 }
                 else
-                {
                     acumulador = resultado;
-                }
                 break;
 
             case 31:
@@ -193,9 +185,7 @@ int main()
                     detener = 1;
                 }
                 else
-                {
                     acumulador = resultado;
-                }
                 break;
 
             case 32:
@@ -214,9 +204,7 @@ int main()
                         detener = 1;
                     }
                     else
-                    {
                         acumulador = resultado;
-                    }
                 }
                 break;
 
@@ -229,8 +217,49 @@ int main()
                     detener = 1;
                 }
                 else
-                {
                     acumulador = resultado;
+                break;
+
+            case 34:
+                if (memoria[operando] == 0)
+                {
+                    printf("Error: modulo entre cero.\n");
+                    detener = 1;
+                }
+                else
+                    acumulador = acumulador % memoria[operando];
+                break;
+
+            case 35:
+                exponente = memoria[operando];
+
+                if (exponente < 0)
+                {
+                    printf("Error: exponente negativo no permitido.\n");
+                    detener = 1;
+                }
+                else
+                {
+                    potencia = 1;
+
+                    for (j = 0; j < exponente; j++)
+                    {
+                        potenciaTemporal =
+                            (long long)potencia * acumulador;
+
+                        if (potenciaTemporal < -9999 ||
+                            potenciaTemporal > 9999)
+                        {
+                            printf("Error: desbordamiento en la potencia.\n");
+                            detener = 1;
+                            break;
+                        }
+
+                        potencia = (int)potenciaTemporal;
+                    }
+
+                    if (detener == 0)
+                        acumulador = potencia;
                 }
                 break;
 
@@ -241,9 +270,7 @@ int main()
                     detener = 1;
                 }
                 else
-                {
                     contadorInstrucciones = operando;
-                }
                 break;
 
             case 41:
@@ -255,9 +282,7 @@ int main()
                         detener = 1;
                     }
                     else
-                    {
                         contadorInstrucciones = operando;
-                    }
                 }
                 break;
 
@@ -270,9 +295,7 @@ int main()
                         detener = 1;
                     }
                     else
-                    {
                         contadorInstrucciones = operando;
-                    }
                 }
                 break;
 
@@ -288,13 +311,10 @@ int main()
         }
     }
 
-    /* Memoria final */
     printf("\n=== MEMORIA FINAL ===\n");
 
     for (i = 0; i < 100; i++)
-    {
         printf("Memoria[%02d]: %+05d\n", i, memoria[i]);
-    }
 
     printf("\nAcumulador final: %d\n", acumulador);
 
